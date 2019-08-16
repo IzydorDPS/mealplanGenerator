@@ -1,3 +1,5 @@
+package pl.dpis.mealplangenerator3.generTests.src;
+
 public class FoodItem implements Comparable{
     private final String name;
     private final float protein;
@@ -6,7 +8,7 @@ public class FoodItem implements Comparable{
     private final float calories;
     private final int mass;
 
-    FoodItem(String name, float protein, float fat, float carbs, float calories)  {
+    public FoodItem(String name, float protein, float fat, float carbs, float calories)  {
         this.name=name;
         this.protein=protein;
         this.fat=fat;

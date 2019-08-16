@@ -1,9 +1,16 @@
+package pl.dpis.mealplangenerator3.generTests.src;
+
+import pl.dpis.mealplangenerator3.generTests.src.FoodItem;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class MealPlan {
+import static pl.dpis.mealplangenerator3.generTests.src.main.random;
+
+public class MealPlan implements Serializable {
     List<FoodItem> foodItemList;
 
     private float Calories;
@@ -12,6 +19,7 @@ public class MealPlan {
     private float Protein;
 
 
+    private int mealQuantity;
     private float targetCalories;
     private float targetFat;
     private float targerCarbs;
@@ -24,6 +32,18 @@ public class MealPlan {
     }
 
     public MealPlan() {
+        this.foodItemList = new ArrayList<>();
+    }
+
+    public MealPlan(int mealQuantity, int targetProtein, int targetFat, int targerCarbs, int targetCalories, int accuracy) {
+        this.targetCalories = targetCalories;
+        this.targetFat = targetFat;
+        this.targerCarbs = targerCarbs;
+        this.targetProtein = targetProtein;
+        this.accuracy = accuracy;
+        this.mealQuantity = mealQuantity;
+
+
         this.foodItemList = new ArrayList<>();
     }
 
@@ -62,19 +82,21 @@ public class MealPlan {
     public void addFood(FoodItem food) {
         foodItemList.add(food);
 
-        this.Calories=foodItemList.stream().map(FoodItem::getCalories).reduce(0.0f, Float::sum);
-        this.Fat=foodItemList.stream().map(FoodItem::getFat).reduce(0.0f, Float::sum);
-        this.Carbs=foodItemList.stream().map(FoodItem::getCarbs).reduce(0.0f, Float::sum);
-        this.Protein=foodItemList.stream().map(FoodItem::getProtein).reduce(0.0f, Float::sum);
+        this.Calories = foodItemList.stream().map(FoodItem::getCalories).reduce(0.0f, Float::sum);
+        this.Fat = foodItemList.stream().map(FoodItem::getFat).reduce(0.0f, Float::sum);
+        this.Carbs = foodItemList.stream().map(FoodItem::getCarbs).reduce(0.0f, Float::sum);
+        this.Protein = foodItemList.stream().map(FoodItem::getProtein).reduce(0.0f, Float::sum);
     }
+
     public void removeFood(FoodItem food) {
         foodItemList.remove(food);
 
-        this.Calories=foodItemList.stream().map(FoodItem::getCalories).reduce(0.0f, Float::sum);
-        this.Fat=foodItemList.stream().map(FoodItem::getFat).reduce(0.0f, Float::sum);
-        this.Carbs=foodItemList.stream().map(FoodItem::getCarbs).reduce(0.0f, Float::sum);
-        this.Protein=foodItemList.stream().map(FoodItem::getProtein).reduce(0.0f, Float::sum);
+        this.Calories = foodItemList.stream().map(FoodItem::getCalories).reduce(0.0f, Float::sum);
+        this.Fat = foodItemList.stream().map(FoodItem::getFat).reduce(0.0f, Float::sum);
+        this.Carbs = foodItemList.stream().map(FoodItem::getCarbs).reduce(0.0f, Float::sum);
+        this.Protein = foodItemList.stream().map(FoodItem::getProtein).reduce(0.0f, Float::sum);
     }
+
     @Override
     public String toString() {
         return "Protein: " + getProtein() + "\n" +
@@ -92,8 +114,8 @@ public class MealPlan {
 
         if ((Math.abs((targetCalories - Calories)) / targetCalories * 100) <= accuracy) {
             if ((Math.abs((targetProtein - Protein)) / targetProtein * 100) <= accuracy) {
-                if ((Math.abs((targetFat - Fat)) / targetFat * 100) <= accuracy*2) {
-                    if ((Math.abs((targerCarbs - Carbs)) / targerCarbs * 100) <= accuracy*2) {
+                if ((Math.abs((targetFat - Fat)) / targetFat * 100) <= accuracy * 2) {
+                    if ((Math.abs((targerCarbs - Carbs)) / targerCarbs * 100) <= accuracy * 2) {
                         return true;
                     }
                 }
@@ -125,7 +147,7 @@ public class MealPlan {
 
 
         HashMap<String, Float> map = new HashMap<>();
-    //    map.put("distanceCalories", Math.abs(targetCalories - getCalories()));
+        //    map.put("distanceCalories", Math.abs(targetCalories - getCalories()));
         map.put("distanceProtein", Math.abs(targetProtein - getProtein()));
         map.put("distanceFat", Math.abs(targetFat - getFat()));
         map.put("distanceCarbs", Math.abs(targerCarbs - getCarbs()));
@@ -135,11 +157,11 @@ public class MealPlan {
         FoodItem food;
         switch (key) {
             case "distanceCalories":
-                 food = Collections.max(getFoodItemList(), (entry1, entry2) -> (int) (entry1.getCalories() - entry2.getCalories()));
+                food = Collections.max(getFoodItemList(), (entry1, entry2) -> (int) (entry1.getCalories() - entry2.getCalories()));
                 getFoodItemList().remove(food);
                 break;
             case "distanceProtein":
-                 food = Collections.max(getFoodItemList(), (entry1, entry2) -> (int) (entry1.getProtein() - entry2.getProtein()));
+                food = Collections.max(getFoodItemList(), (entry1, entry2) -> (int) (entry1.getProtein() - entry2.getProtein()));
                 removeFood(food);
                 break;
             case "distanceFat":
@@ -154,5 +176,35 @@ public class MealPlan {
         }
 
 
+    }
+
+    public void printFood() {
+        int id = 0;
+        for (FoodItem f : foodItemList) {
+            System.out.println("ID:" + id + "\t" + f.toString());
+            id++;
+        }
+    }
+
+    public void regenerateFoodAtIndex(int userInput, List<FoodItem> listOfFoods) {
+        this.removeFood(foodItemList.get(userInput));
+        long timeStart = System.currentTimeMillis();
+        FoodItem food;
+        do {
+            if (System.currentTimeMillis() - timeStart > 1000) {
+                System.out.println("Nie znaleziono potrawy w wyznaczonym czasie");
+                break;
+            }
+
+            //select random food
+            food = listOfFoods.get((random.nextInt(listOfFoods.size())));
+
+            if (this.isFoodFit(food)) {
+                this.addFood(food);
+                if (!this.isNutrientsMet()) {
+                    this.removeFood(food);
+                }
+            }
+        } while (!this.isNutrientsMet());
     }
 }
